@@ -13,32 +13,35 @@ final case class LambdaLoaderLive(environment: LambdaEnvironment, blocking: Bloc
     extends LambdaLoader {
 
   override def loadLambda(): Task[ZLambda[_, _]] =
-    ZManaged
-      .make(blocking.effectBlocking(Files.list(Paths.get(environment.taskRoot.getOrElse("")))))(stream =>
-        ZIO.succeed(stream.close())
-      )
-      .use[Any, Throwable, ZLambda[_, _]] { stream =>
-        val classLoader = new URLClassLoader(
-          stream
-            .iterator()
-            .asScala
-            .map(_.toUri().toURL())
-            .toArray,
-          ClassLoader.getSystemClassLoader()
-        )
+    for {
+      taskRoot <- ZIO.require(new Throwable("Task Root not defined"))(ZIO.succeed(environment.taskRoot))
+      handler  <- ZIO.require(new Throwable("Function Handler not defined"))(ZIO.succeed(environment.taskRoot))
+      zLambda <-
+        ZManaged
+          .make(blocking.effectBlocking(Files.list(Paths.get(taskRoot))))(stream => ZIO.succeed(stream.close()))
+          .use[Any, Throwable, ZLambda[_, _]] { stream =>
+            val classLoader = new URLClassLoader(
+              stream
+                .iterator()
+                .asScala
+                .map(_.toUri().toURL())
+                .toArray,
+              ClassLoader.getSystemClassLoader()
+            )
 
-        blocking
-          .effectBlocking(
-            Class
-              .forName(
-                environment.handler.getOrElse("") + "$",
-                true,
-                classLoader
+            blocking
+              .effectBlocking(
+                Class
+                  .forName(
+                    handler + "$",
+                    true,
+                    classLoader
+                  )
+                  .getDeclaredField("MODULE$")
+                  .get(null)
+                  .asInstanceOf[ZLambda[_, _]]
               )
-              .getDeclaredField("MODULE$")
-              .get(null)
-              .asInstanceOf[ZLambda[_, _]]
-          )
-      }
+          }
+    } yield zLambda
 
 }
