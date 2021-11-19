@@ -1,9 +1,8 @@
-package zio.runtime
+package zio.lambda
 
 import zio._
 import zio.blocking._
 import zio.console._
-import zio.runtime.lambda.ZLambda
 
 import java.net.URLClassLoader
 import java.nio.file.Files
@@ -15,7 +14,9 @@ final case class LambdaLoaderLive(environment: LambdaEnvironment, blocking: Bloc
 
   override def loadLambda(): Task[ZLambda[_, _]] =
     ZManaged
-      .make(blocking.effectBlocking(Files.list(Paths.get(environment.taskRoot))))(stream => ZIO.succeed(stream.close()))
+      .make(blocking.effectBlocking(Files.list(Paths.get(environment.taskRoot.getOrElse("")))))(stream =>
+        ZIO.succeed(stream.close())
+      )
       .use[Any, Throwable, ZLambda[_, _]] { stream =>
         val classLoader = new URLClassLoader(
           stream
@@ -30,12 +31,12 @@ final case class LambdaLoaderLive(environment: LambdaEnvironment, blocking: Bloc
           .effectBlocking(
             Class
               .forName(
-                environment.lambdaClass,
+                environment.handler.getOrElse("") + "$",
                 true,
                 classLoader
               )
-              .getDeclaredConstructor()
-              .newInstance()
+              .getDeclaredField("MODULE$")
+              .get(null)
               .asInstanceOf[ZLambda[_, _]]
           )
       }

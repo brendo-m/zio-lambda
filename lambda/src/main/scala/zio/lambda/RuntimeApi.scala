@@ -1,4 +1,4 @@
-package zio.runtime
+package zio.lambda
 
 import sttp.client3._
 import zio._

@@ -1,4 +1,4 @@
-package zio.lambda.shared
+package zio.lambda
 
 import zio.json._
 

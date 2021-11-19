@@ -1,9 +1,8 @@
-package zio.runtime
+package zio.lambda
 
 import zio._
 import zio.blocking._
 import zio.console._
-import zio.runtime.lambda.ZLambda
 
 trait LambdaLoader {
   def loadLambda(): Task[ZLambda[_, _]]

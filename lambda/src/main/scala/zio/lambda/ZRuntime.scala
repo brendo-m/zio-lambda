@@ -1,4 +1,4 @@
-package zio.runtime
+package zio.lambda
 
 import zio._
 
