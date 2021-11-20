@@ -49,7 +49,7 @@ lazy val zioLambda = module("zio-lambda", "lambda")
     stdSettings("zio-lambda"),
     testFrameworks := Seq(new TestFramework("zio.test.sbt.ZTestFramework")),
     libraryDependencies ++= Seq(
-      "com.softwaremill.sttp.client3" %% "httpclient-backend" % sttpVersion
+      "com.softwaremill.sttp.client3" %% "okhttp-backend" % sttpVersion
     )
   )
   .settings(

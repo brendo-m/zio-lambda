@@ -1,6 +1,5 @@
 package zio.lambda
 
-import sttp.client3.HttpURLConnectionBackend
 import zio._
 import zio.blocking.Blocking
 import zio.json._
@@ -43,7 +42,7 @@ abstract class ZLambda[E, A](
     val runtimeApiLayer = (
       LambdaEnvironment.live ++
         Blocking.live ++
-        ZLayer.succeed(HttpURLConnectionBackend())
+        SttpClient.layer
     ) >>> RuntimeApi.layer
 
     ZRuntime
