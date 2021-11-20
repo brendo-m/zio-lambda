@@ -15,7 +15,7 @@ final case class LambdaLoaderLive(environment: LambdaEnvironment, blocking: Bloc
   override def loadLambda(): Task[ZLambda[_, _]] =
     for {
       taskRoot <- ZIO.require(new Throwable("Task Root not defined"))(ZIO.succeed(environment.taskRoot))
-      handler  <- ZIO.require(new Throwable("Function Handler not defined"))(ZIO.succeed(environment.taskRoot))
+      handler  <- ZIO.require(new Throwable("Function Handler not defined"))(ZIO.succeed(environment.handler))
       zLambda <-
         ZManaged
           .make(blocking.effectBlocking(Files.list(Paths.get(taskRoot))))(stream => ZIO.succeed(stream.close()))

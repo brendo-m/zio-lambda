@@ -43,6 +43,7 @@ lazy val root =
 
 lazy val zioLambda = module("zio-lambda", "lambda")
   .enablePlugins(BuildInfoPlugin)
+  .enablePlugins(JavaAppPackaging)
   .settings(buildInfoSettings("zio.lambda"))
   .settings(
     stdSettings("zio-lambda"),
@@ -50,6 +51,11 @@ lazy val zioLambda = module("zio-lambda", "lambda")
     libraryDependencies ++= Seq(
       "com.softwaremill.sttp.client3" %% "httpclient-backend" % sttpVersion
     )
+  )
+  .settings(
+    topLevelDirectory := None,
+    Universal / mappings ++= Seq(file("bootstrap") -> "bootstrap"),
+    Compile / mainClass := Some("zio.lambda.ZRuntimeApp")
   )
 
 lazy val zioLambdaExample = module("zio-lambda-example", "lambda-example")
@@ -59,6 +65,7 @@ lazy val zioLambdaExample = module("zio-lambda-example", "lambda-example")
   .settings(
     name := "zio-lambda-example",
     stdSettings("zio-lambda-example"),
+    assembly / assemblyJarName := "zio-lambda-example.jar",
     GraalVMNativeImage / mainClass := Some("zio.lambda.example.SimpleHandler"),
     graalVMNativeImageOptions := Seq(
       "--verbose",
